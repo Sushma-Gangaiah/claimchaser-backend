@@ -19,6 +19,8 @@ class EntryBase(BaseModel):
     charges: Optional[str] = None
     paid_by_payer: Optional[str] = None
     payer_control_num: Optional[str] = None
+    claim_due: Optional[Decimal] = None
+    claims_number: Optional[str] = None
     last_submission_date: Optional[str] = None
     follow_up_date: Optional[str] = None
     date_worked: Optional[str] = None
@@ -66,6 +68,8 @@ class EntryUpdate(BaseModel):
     charges: Optional[str] = None
     paid_by_payer: Optional[str] = None
     payer_control_num: Optional[str] = None
+    claim_due: Optional[Decimal] = None
+    claims_number: Optional[str] = None
     last_submission_date: Optional[str] = None
     follow_up_date: Optional[str] = None
     date_worked: Optional[str] = None
@@ -97,6 +101,8 @@ class EntryResponse(BaseModel):
     charges: Optional[Decimal] = None
     paid_by_payer: Optional[Decimal] = None
     payer_control_num: Optional[str] = None
+    claim_due: Optional[Decimal] = None
+    claims_number: Optional[str] = None
     last_submission_date: Optional[date] = None
     follow_up_date: Optional[date] = None
     date_worked: Optional[date] = None
@@ -113,7 +119,7 @@ class EntryResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    @field_serializer('charges', 'paid_by_payer')
+    @field_serializer('charges', 'paid_by_payer', 'claim_due')
     def serialize_amount(self, value):
         if value is None:
             return None

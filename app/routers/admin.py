@@ -220,6 +220,42 @@ async def get_claims_summary(
 # USER ENTRIES MANAGEMENT
 # ============================================
 
+@router.get("/entries/report")
+async def get_entries_report(
+    user_name: Optional[str] = Query(None),
+    escalation: Optional[bool] = Query(None),
+    date_from: Optional[date] = Query(None),
+    date_to: Optional[date] = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(get_admin_user)
+):
+    """Paginate submitted reports with filters applied before counting and paging."""
+    conditions = [Entry.is_draft.is_(False)]
+    submitted_date = get_entry_submitted_date_expr()
+    if date_from:
+        conditions.append(submitted_date >= datetime.combine(date_from, datetime.min.time()))
+    if date_to:
+        conditions.append(submitted_date < datetime.combine(date_to + timedelta(days=1), datetime.min.time()))
+    users_stmt = select(Entry.user_name).where(*conditions).distinct().order_by(Entry.user_name)
+    users = (await db.execute(users_stmt)).scalars().all()
+    if user_name:
+        conditions.append(Entry.user_name == user_name)
+    if escalation is not None:
+        conditions.append(func.coalesce(Entry.escalation, False) == escalation)
+    total = (await db.execute(select(func.count()).select_from(Entry).where(*conditions))).scalar_one()
+    stmt = select(Entry).where(*conditions).order_by(
+        get_entry_submitted_date_expr().desc(), Entry.id.desc()
+    ).offset(skip).limit(limit)
+    entries = (await db.execute(stmt)).scalars().all()
+    return {
+        "items": [EntryResponse.model_validate(entry) for entry in entries],
+        "total": total,
+        "users": users,
+    }
+
+
 @router.get("/entries", response_model=List[EntryResponse])
 async def get_all_user_entries(
     user_id: str = Query(None),

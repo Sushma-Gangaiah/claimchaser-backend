@@ -107,6 +107,8 @@ async def create_entry(
             charges=charges_value,
             paid_by_payer=paid_by_payer_value,
             payer_control_num=entry_data.payer_control_num,
+            claims_number=entry_data.claims_number,
+            claim_due=entry_data.claim_due,
             last_submission_date=last_submission_date_value,
             follow_up_date=follow_up_date_value,
             date_worked=date_worked_value,
@@ -182,7 +184,7 @@ async def update_entry(
                     update_data[date_field] = None
 
     # Convert empty strings to None for decimal fields
-    decimal_fields = ['charges', 'paid_by_payer']
+    decimal_fields = ['charges', 'paid_by_payer', 'claim_due']
     for decimal_field in decimal_fields:
         if decimal_field in update_data:
             if not update_data[decimal_field] or not str(update_data[decimal_field]).strip():
@@ -191,7 +193,7 @@ async def update_entry(
     # Convert empty strings to None for other optional string fields
     string_fields = [
         'client_code', 'patient_name', 'provider_name', 'location', 'payer_name',
-        'insurance_type', 'insurance_payer_type', 'claim_type', 'payer_control_num',
+        'insurance_type', 'insurance_payer_type', 'claim_type', 'payer_control_num', 'claims_number',
         'comments', 'status_code', 'sub_status_code', 'action_code', 'software'
     ]
     for field in string_fields:

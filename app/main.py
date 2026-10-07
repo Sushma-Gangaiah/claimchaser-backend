@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.routers import auth, admin, invitation, user
 from app.db.base import Base
+from app.db.migrations import ensure_entry_claims_number, ensure_entry_claim_due
 from app.db.session import async_session, engine
 from app.services.bootstrap import ensure_default_admin, ensure_default_user
 
@@ -47,6 +48,8 @@ async def startup():
     """Initialize database and seed the default admin user on startup."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(ensure_entry_claims_number)
+        await conn.run_sync(ensure_entry_claim_due)
 
     async with async_session() as db:
         await ensure_default_admin(db)
